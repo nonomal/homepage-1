@@ -11,7 +11,7 @@ const headerCacheKey = `${proxyName}__headers`;
 const logger = createLogger(proxyName);
 
 export default async function transmissionProxyHandler(req, res) {
-  const { group, service, endpoint } = req.query;
+  const { group, service } = req.query;
 
   if (!group || !service) {
     logger.debug("Invalid or missing service '%s' or group '%s'", service, group);
@@ -29,13 +29,13 @@ export default async function transmissionProxyHandler(req, res) {
   if (!headers) {
     headers = {
       "content-type": "application/json",
-    }
+    };
     cache.put(`${headerCacheKey}.${service}`, headers);
   }
 
   const api = `${widget.url}${widget.rpcUrl || widgets[widget.type].rpcUrl}rpc`;
 
-  const url = new URL(formatApiCall(api, { endpoint, ...widget }));
+  const url = new URL(formatApiCall(api, { endpoint: undefined, ...widget }));
   const csrfHeaderName = "x-transmission-session-id";
 
   const method = "POST";
@@ -70,7 +70,7 @@ export default async function transmissionProxyHandler(req, res) {
 
   if (status !== 200) {
     logger.error("Error getting data from Transmission: %d.  Data: %s", status, data);
-    return res.status(500).send({error: {message:"Error getting data from Transmission", url, data}});
+    return res.status(500).send({ error: { message: "Error getting data from Transmission", url, data } });
   }
 
   if (contentType) res.setHeader("Content-Type", contentType);

@@ -1,6 +1,10 @@
 import { existsSync } from "fs";
 
-const si = require('systeminformation');
+import createLogger from "utils/logger";
+
+const logger = createLogger("resources");
+
+const si = require("systeminformation");
 
 export default async function handler(req, res) {
   const { type, target } = req.query;
@@ -23,28 +27,33 @@ export default async function handler(req, res) {
     }
 
     const fsSize = await si.fsSize();
-
+    logger.debug("fsSize:", JSON.stringify(fsSize));
     return res.status(200).json({
-      drive: fsSize.find(fs => fs.mount === target) ?? fsSize.find(fs => fs.mount === "/")
+      drive: fsSize.find((fs) => fs.mount === target) ?? fsSize.find((fs) => fs.mount === "/"),
     });
   }
 
   if (type === "memory") {
+    const memory = await si.mem();
+    logger.debug("memory:", JSON.stringify(memory));
     return res.status(200).json({
-      memory: await si.mem(),
+      memory,
     });
   }
 
   if (type === "cputemp") {
+    const cputemp = await si.cpuTemperature();
+    logger.debug("cputemp:", JSON.stringify(cputemp));
     return res.status(200).json({
-      cputemp: await si.cpuTemperature(),
+      cputemp,
     });
   }
 
   if (type === "uptime") {
     const timeData = await si.time();
+    logger.debug("timeData:", JSON.stringify(timeData));
     return res.status(200).json({
-      uptime: timeData.uptime
+      uptime: timeData.uptime,
     });
   }
 
